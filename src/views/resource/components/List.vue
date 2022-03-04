@@ -31,8 +31,8 @@
           </el-form-item>
         </el-form>
       </div>
-      <el-button>添加</el-button>
-      <el-button>资源分类</el-button>
+      <el-button @click="handleAdd">添加</el-button>
+      <el-button @click="resourceCategory">资源分类</el-button>
       <el-table
         :data="resources"
         style="width: 100%; margin-bottom: 20px;"
@@ -48,7 +48,7 @@
         </el-table-column>
         <el-table-column prop="description" width="180" label="描述">
         </el-table-column>
-        <el-table-column width="180" prop="createdTime" label="添加时间">
+        <el-table-column width="180" :formatter="dateFormat" label="添加时间">
         </el-table-column>
         <el-table-column width="180" label="操作">
           <template slot-scope="scope">
@@ -82,17 +82,36 @@
       >
       </el-pagination>
     </el-card>
+    <el-dialog
+      :title="isEdit ? '编辑资源' : '添加资源'"
+      :visible.sync="dialogVisible"
+      width="500px"
+    >
+      <create-or-edit
+        v-if="dialogVisible"
+        :resource-id="resourceId"
+        :is-edit="isEdit"
+        @success="onSuccess"
+        @cancel="dialogVisible = false"
+      />
+    </el-dialog>
   </div>
 </template>
 
 <script lang="ts">
 import Vue from 'vue'
-import { getResourcePages } from '@/services/resource'
+import { getResourcePages, deleteResource } from '@/services/resource'
 import { getResourceCategories } from '@/services/resource-category'
 import { Form } from 'element-ui'
+import CreateOrEdit from './CreateOrEdit.vue'
+import moment from 'moment'
 
 export default Vue.extend({
   name: 'ResourceList',
+  components: {
+    // eslint-disable-next-line vue/no-unused-components
+    CreateOrEdit
+  },
   data () {
     return {
       resources: [], // 资源列表
@@ -105,7 +124,10 @@ export default Vue.extend({
       },
       totalCount: 0,
       resourceCategories: [], // 资源分类列表
-      isLoading: true // 加载状态
+      isLoading: true, // 加载状态
+      dialogVisible: false, // 控制添加/编辑资源的对话框显示和隐藏
+      resourceId: null, // 编辑角色的 ID
+      isEdit: false
     }
   },
 
@@ -115,6 +137,27 @@ export default Vue.extend({
   },
 
   methods: {
+    dateFormat (item: any) {
+      if (item && item.updatedTime) {
+        return moment(item.updatedTime).format('YYYY-MM-DD HH:mm:ss')
+      }
+    },
+    handleAdd () {
+      this.isEdit = false
+      this.dialogVisible = true
+    },
+
+    handleEdit (resource: any) {
+      this.dialogVisible = true
+      this.resourceId = resource.id
+      this.isEdit = true
+    },
+
+    onSuccess () {
+      this.dialogVisible = false // 关闭对话框
+      this.loadResources() // 重新加载数据列表
+    },
+
     async loadResourceCategories () {
       const { data } = await getResourceCategories()
       this.resourceCategories = data.data
@@ -133,12 +176,19 @@ export default Vue.extend({
       this.loadResources()
     },
 
-    handleEdit (item: any) {
-      console.log('handleEdit', item)
-    },
-
-    handleDelete (item: any) {
-      console.log('handleDelete', item)
+    async handleDelete (item: any) {
+      try {
+        await this.$confirm(`确认删除资源：${item.name}？`, '删除提示')
+        await deleteResource(item.id)
+        this.$message.success('删除成功')
+        this.loadResources()
+      } catch (err) {
+        if (err) {
+          this.$message.error('删除失败，请重试')
+        } else {
+          this.$message.info('取消删除')
+        }
+      }
     },
 
     handleSizeChange (val: number) {
@@ -157,6 +207,13 @@ export default Vue.extend({
       ;(this.$refs.form as Form).resetFields()
       this.form.current = 1 // 重置回到第1页
       this.loadResources()
+    },
+
+    // 资源分类
+    resourceCategory () {
+      this.$router.push({
+        name: 'resource-category'
+      })
     }
   }
 })
@@ -164,7 +221,7 @@ export default Vue.extend({
 
 <style lang="scss">
 .el-card__body {
-  >.el-button:nth-child(1) {
+  > .el-button:nth-child(1) {
     margin: 20px 10px 20px 40px;
   }
   padding: 0px 0px 20px 0px;
@@ -177,5 +234,8 @@ export default Vue.extend({
       text-align: center;
     }
   }
+}
+.el-dialog__body {
+  width: 350px;
 }
 </style>
