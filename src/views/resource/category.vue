@@ -98,13 +98,14 @@ export default Vue.extend({
     async handleDelete (item: any) {
       try {
         await this.$confirm(`确认删除分类：${item.name}？`, '删除提示')
-        await deleteResourceCategory(item.id)
-        this.$message.success('删除成功')
+        const { data } = await deleteResourceCategory(item.id)
+        console.log(data)
+        this.$message.success(data.mesg)
         this.getResourceCategories()
         this.centerDialogVisible = false
       } catch (err) {
         if (err) {
-          this.$message.error('删除失败，请重试')
+          this.$message.error('该分类有资源存在，删除失败')
         } else {
           this.$message.info('取消删除')
         }
