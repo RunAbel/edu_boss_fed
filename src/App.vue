@@ -7,6 +7,7 @@
 
 <script lang="ts">
 import Vue from 'vue'
+import '@/main.ts'
 
 export default Vue.extend({
   name: 'App'

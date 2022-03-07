@@ -38,7 +38,12 @@
       </el-table-column>
       <el-table-column prop="name" label="用户名"> </el-table-column>
       <el-table-column prop="phone" label="手机号"> </el-table-column>
-      <el-table-column prop="createTime" label="注册时间"> </el-table-column>
+      <el-table-column
+        prop="createTime"
+        label="注册时间"
+        :formatter="dateFormat"
+      >
+      </el-table-column>
       <!-- <el-table-column
         prop="name"
         label="状态"
@@ -86,6 +91,7 @@ import Vue from 'vue'
 import { getUserPages, forbidUser } from '@/services/user'
 import { Form } from 'element-ui'
 import { getAllRoles, allocateUserRoles, getUserRoles } from '@/services/role'
+import moment from 'moment'
 
 export default Vue.extend({
   name: 'UserList',
@@ -113,6 +119,11 @@ export default Vue.extend({
   },
 
   methods: {
+    dateFormat (item: any) {
+      if (item && item.createTime) {
+        return moment(item.createTime).format('YYYY-MM-DD HH:mm:ss')
+      }
+    },
     async loadUsers () {
       this.loading = true
       const { rangeDate } = this.filterParams

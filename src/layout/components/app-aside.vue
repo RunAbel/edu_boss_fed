@@ -1,5 +1,13 @@
 <template>
   <div class="aside">
+    <div id="icon">
+      <a v-show="sidebar" href="https://www.abel.run/#/">
+        <img src="@/assets/3.png" class="small mylogo" alt=""
+      /></a>
+      <a v-show="!sidebar" href="https://www.abel.run/#/">
+        <img src="@/assets/1.png" class="big mylogo" alt=""
+      /></a>
+    </div>
     <el-menu
       default-active="4"
       @open="handleOpen"
@@ -8,7 +16,9 @@
       text-color="#fff"
       active-text-color="#ffd04b"
       router
-      collapse
+      :collapse="sidebar"
+      class="el-menu-vertical-demo"
+      :style="sidebar ? 'padding-top: 60px;' : 'padding-top: 120px;'"
     >
       <el-submenu index="1">
         <template slot="title">
@@ -59,6 +69,18 @@ import Vue from 'vue'
 
 export default Vue.extend({
   name: 'AppAside',
+  data () {
+    return {
+      isCollapse: false,
+      sidebar: false
+    }
+  },
+  created () {
+    ;(this as any).$bus.$on('sidebar', (sidebar: any) => {
+      // console.log(sidebar)
+      this.sidebar = sidebar
+    })
+  },
   methods: {
     handleOpen (key: string, keyPath: string): void {
       console.log(key, keyPath)
@@ -67,6 +89,11 @@ export default Vue.extend({
     handleClose (key: string, keyPath: string): void {
       console.log(key, keyPath)
     }
+  },
+  beforeDestroy () {
+    ;(this as any).$bus.$off('sidebar', () => {
+      // console.log('兄弟傳值被消除')
+    }) // 当这个组件销毁的时候bus也跟着一起销毁
   }
 })
 </script>
@@ -78,6 +105,28 @@ export default Vue.extend({
     width: auto;
     // min-height: 100vh;
     height: 100%;
+    box-sizing: border-box;
+  }
+  #icon {
+    position: absolute;
+    z-index: 999;
+    .small {
+      margin: auto;
+      padding: 4px;
+      width: 56px;
+      height: 56px;
+    }
+    .big {
+      margin: auto;
+      padding: 4px;
+      width: 192px;
+    }
+    .mylogo {
+      cursor: pointer;
+    }
+  }
+  .el-menu-vertical-demo:not(.el-menu--collapse) {
+    width: 200px;
   }
 }
 </style>

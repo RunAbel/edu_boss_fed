@@ -8,76 +8,61 @@
             <el-input v-model="form.name"></el-input>
           </el-form-item>
           <el-form-item>
-            <el-button
-              type="primary"
-              @click="onSubmit"
-              :disabled="loading"
-            >查询搜索</el-button>
-            <el-button
-              :disabled="loading"
-              @click="onReset"
-            >重置</el-button>
+            <el-button type="primary" @click="onSubmit" :disabled="loading"
+              >查询搜索</el-button
+            >
+            <el-button :disabled="loading" @click="onReset">重置</el-button>
           </el-form-item>
         </el-form>
       </div>
       <el-button @click="handleAdd">添加角色</el-button>
-      <el-table
-        :data="roles"
-        style="width: 100%"
-        v-loading="loading"
-      >
-        <el-table-column
-          prop="id"
-          label="编号"
-        />
-        <el-table-column
-          prop="name"
-          label="角色名称"
-        />
-        <el-table-column
-          prop="description"
-          label="描述"
-        />
+      <el-table :data="roles" style="width: 100%" v-loading="loading">
+        <el-table-column prop="id" label="编号" />
+        <el-table-column prop="name" label="角色名称" />
+        <el-table-column prop="description" label="描述" />
         <el-table-column
           prop="createdTime"
           label="添加时间"
+          :formatter="dateFormat"
         />
-        <el-table-column
-          label="操作"
-          align="center"
-          width="150px"
-        >
+        <el-table-column label="操作" align="center" width="150px">
           <template slot-scope="scope">
             <div>
               <el-button
                 type="text"
-                @click="$router.push({
-                  name: 'alloc-menu',
-                  params: {
-                    roleId: scope.row.id
-                  }
-                })"
-              >分配菜单</el-button>
+                @click="
+                  $router.push({
+                    name: 'alloc-menu',
+                    params: {
+                      roleId: scope.row.id
+                    }
+                  })
+                "
+                >分配菜单</el-button
+              >
               <el-button
                 type="text"
-                @click="$router.push({
-                  name: 'alloc-resource',
-                  params: {
-                    roleId: scope.row.id
-                  }
-                })"
-              >分配资源</el-button>
+                @click="
+                  $router.push({
+                    name: 'alloc-resource',
+                    params: {
+                      roleId: scope.row.id
+                    }
+                  })
+                "
+                >分配资源</el-button
+              >
             </div>
             <div>
-              <el-button
-                type="text"
-                @click="handleEdit(scope.row)"
-              >编辑</el-button>
+              <el-button type="text" @click="handleEdit(scope.row)"
+                >编辑</el-button
+              >
               <el-button
                 size="mini"
                 type="text"
                 @click="handleDelete(scope.row)"
-              >删除</el-button>
+                >删除</el-button
+              >
             </div>
           </template>
         </el-table-column>
@@ -105,6 +90,7 @@ import Vue from 'vue'
 import { getRoles, deleteRole } from '@/services/role'
 import { Form } from 'element-ui'
 import CreateOrEdit from './CreateOrEdit.vue'
+import moment from 'moment'
 
 export default Vue.extend({
   name: 'RoleList',
@@ -131,6 +117,11 @@ export default Vue.extend({
   },
 
   methods: {
+    dateFormat (item: any) {
+      if (item && item.updatedTime) {
+        return moment(item.updatedTime).format('YYYY-MM-DD HH:mm:ss')
+      }
+    },
     async loadRoles () {
       this.loading = true
       const { data } = await getRoles(this.form)
@@ -164,7 +155,7 @@ export default Vue.extend({
     },
 
     onReset () {
-      (this.$refs.form as Form).resetFields()
+      ;(this.$refs.form as Form).resetFields()
       this.loadRoles()
     },
 
